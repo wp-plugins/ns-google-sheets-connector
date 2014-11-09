@@ -5,7 +5,7 @@
 	Description: This is a painless way to integrate and automatically send WordPress data to Google Sheets.
 	Text Domain: ns-plugin-template
 	Author: Never Settle
-	Version: 1.0.0
+	Version: 1.0.1
 	Author URI: http://neversettle.it
 	License: GPLv2 or later
 */
@@ -272,7 +272,12 @@ class ns_google_sheets_connector {
 					if ( strpos($key, '_wpcf7') !== false || strpos($key, '_wpnonce') !== false ) {
 						// do nothing
 					} else {
-						$my_data[$key] = $value;
+						// handle strings and array elements
+						if (is_array($value)) {
+							$my_data[$key] = implode(', ', $value);	
+						} else {
+							$my_data[$key] = $value;
+						}					
 					}
 				}				
 				$doc->add_row($my_data);

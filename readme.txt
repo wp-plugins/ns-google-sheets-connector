@@ -55,6 +55,9 @@ We'll try to answer any questions that come up in the support forum here on WP.o
 
 == Changelog ==
 
+= 1.0.1 =
+* Added support for CF7 checkbox fields
+
 = 1.0.0 =
 * First public release
 
