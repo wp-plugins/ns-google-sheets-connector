@@ -3,7 +3,7 @@ Contributors: neversettle
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RM625PKSQGCCY&rm=2
 Tags: google, sheets, google sheets, connector, integration, cf7, contact form 7, data, db, form, form data
 Requires at least: 3.5
-Tested up to: 4.0
+Tested up to: 4.0.1
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -12,7 +12,9 @@ This is a painless way to integrate and automatically send WordPress data to Goo
 
 == Description ==
 
-This plugin currently supports connecting the Contact Form 7 plugin to Google Sheets, but let us know what other kinds of data you'd like this to capture! 
+This plugin currently supports connecting the Contact Form 7 plugin to Google Sheets, but let us know what other kinds of data you'd like this to capture!
+
+The <a href="http://neversettle.it/connect-wordpress-google-sheets-pro">PRO Version</a> is now available, and provides connections between unlimited CF7 forms and Google Spreadsheets! 
 
 = How to Use this Plugin =
 
@@ -55,6 +57,12 @@ We'll try to answer any questions that come up in the support forum here on WP.o
 
 == Changelog ==
 
+= 1.0.3 =
+* Added Pro Version Notification
+
+= 1.0.2 =
+* Added additional error handling to fix some google connection issues with custom domains
+
 = 1.0.1 =
 * Added support for CF7 checkbox fields
 
@@ -62,4 +70,3 @@ We'll try to answer any questions that come up in the support forum here on WP.o
 * First public release
 
 == Upgrade Notice ==
-

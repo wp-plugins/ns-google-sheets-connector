@@ -3,9 +3,9 @@
 	Plugin Name: NS Google Sheets Connector
 	Plugin URI: http://neversettle.it
 	Description: This is a painless way to integrate and automatically send WordPress data to Google Sheets.
-	Text Domain: ns-plugin-template
+	Text Domain: ns-google-sheets
 	Author: Never Settle
-	Version: 1.0.1
+	Version: 1.0.3
 	Author URI: http://neversettle.it
 	License: GPLv2 or later
 */
@@ -55,17 +55,11 @@ class ns_google_sheets_connector {
 	
 	function __construct(){		
 		$this->path = plugin_dir_path( __FILE__ );
-		// TODO: update to actual
 		$this->wp_plugin_page = "http://wordpress.org/plugins/ns-google-sheets-connector";
-		// TODO: update to link builder generated URL or other public page or redirect
 		$this->ns_plugin_page = "http://neversettle.it/";
-		// TODO: update this - used throughout plugin code and only have to update here
 		$this->ns_plugin_name = "NS Google Sheets Connector";
-		// TODO: update this - used throughout plugin code and only have to update here
 		$this->ns_plugin_menu = "NS Sheets";
-		// TODO: update this - used throughout plugin code and only have to update here
 		$this->ns_plugin_slug = "ns-google-sheets-connector";
-		// TODO: update this - used throughout plugin code and only have to update here
 		$this->ns_plugin_ref = "ns_google_sheets_connector";
 		
 		add_action( 'plugins_loaded', array($this, 'setup_plugin') );
@@ -151,6 +145,7 @@ class ns_google_sheets_connector {
 			)
 		);
 		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_pass');
+		
 		// google sheets name
 		add_settings_field( 
 			$this->ns_plugin_ref.'_sheet', 		// ID used to identify the field
@@ -217,10 +212,9 @@ class ns_google_sheets_connector {
 		?>
 		<div class="wrap">
 			
-			<h2><?php $this->plugin_image( 'banner.png', __('ALT') ); ?></h2>
-			
 			<!-- BEGIN Left Column -->
 			<div class="ns-col-left">
+				<h2><?php $this->plugin_image( 'banner.png', __('ALT') ); ?></h2>
 				<form method="POST" action="options.php" style="width: 100%;">
 					<?php settings_fields($this->ns_plugin_ref); ?>
 					<?php do_settings_sections($this->ns_plugin_ref); ?>
@@ -229,20 +223,27 @@ class ns_google_sheets_connector {
 			</div>
 			<!-- END Left Column -->
 						
+			
+
+			<!-- BEGIN Right RIGHT Column -->			
+			<div class="ns-col-right-right">
+				<div class="ns-side-widget ns-random-widget">
+					<div class="ns-side-widget-content">
+						<a href="http://neversettle.it/connect-wordpress-google-sheets-plugin" target="_blank"><img style="max-width:100%" src="<?php echo plugins_url('/images/go-pro.jpg',__FILE__); ?>" alt="Go PRO! Get unlimited form connections!" /></a>
+					</div>
+				</div>
+				<?php ns_sidebar::widget( 'subscribe' ); ?>				
+			</div>
+			<!-- END Right RIGHT Column -->
+			
 			<!-- BEGIN Right Column -->			
 			<div class="ns-col-right">
 				<h3>Thanks for using <?php echo $this->ns_plugin_name; ?></h3>
-				<?php ns_sidebar::widget( 'subscribe' ); ?>
-				<?php ns_sidebar::widget( 'share', array('plugin_url'=>'http://neversettle.it/buy/wordpress-plugins/ns-fba-for-woocommerce/','plugin_desc'=>'Automate your WooCommerce fulfillment with FBA!','text'=>'Would anyone else you know enjoy NS FBA for WooCommerce?') ); ?>
+				<?php ns_sidebar::widget( 'rate', array( 'Has this plugin helped you out? Give back with a 5-star rating!', 'ns-google-sheets-connector' )); ?>
+				<?php ns_sidebar::widget( 'links', array( 'ns-sheets' ) ); ?>
 				<?php ns_sidebar::widget( 'donate' ); ?>				
 			</div>
 			<!-- END Right Column -->
-			<!-- BEGIN Right RIGHT Column -->			
-			<div class="ns-col-right-right">
-				<?php ns_sidebar::widget( 'links', array('ns-sheets') ); ?>
-				<?php ns_sidebar::widget( 'random'); ?>
-			</div>
-			<!-- END Right RIGHT Column -->
 		</div>
 		<?php
 	}
@@ -257,35 +258,43 @@ class ns_google_sheets_connector {
 		/* Use WPCF7_Submission object's get_posted_data() method to get it. */
         $submission = WPCF7_Submission::get_instance();
 
+        $my_data = array();
         if ($submission) {
             $posted_data = $submission->get_posted_data();
 			// make sure the form ID matches the setting otherwise don't do anything
-			if ( $posted_data['_wpcf7'] == get_option($this->ns_plugin_ref.'_form') ) {
-				include_once(plugin_dir_path(__FILE__) . "lib/google-sheets.php");
-				$doc = new googlesheet();
-				$doc->authenticate(get_option($this->ns_plugin_ref.'_user'), get_option($this->ns_plugin_ref.'_pass'));
-				$doc->settitleSpreadsheet(get_option($this->ns_plugin_ref.'_sheet'));
-				$doc->settitleWorksheet(get_option($this->ns_plugin_ref.'_tab'));
-				$my_data["date"]=date('n/j/Y');
-				foreach ( $posted_data as $key => $value ) {
-					// exclude the default wpcf7 fields in object
-					if ( strpos($key, '_wpcf7') !== false || strpos($key, '_wpnonce') !== false ) {
-						// do nothing
-					} else {
-						// handle strings and array elements
-						if (is_array($value)) {
-							$my_data[$key] = implode(', ', $value);	
+			try {
+				if ( $posted_data['_wpcf7'] == get_option($this->ns_plugin_ref.'_form') ) {
+					include_once(plugin_dir_path(__FILE__) . "lib/google-sheets.php");
+					$doc = new googlesheet();
+					$doc->authenticate(get_option($this->ns_plugin_ref.'_user'), get_option($this->ns_plugin_ref.'_pass'));
+					$doc->settitleSpreadsheet(get_option($this->ns_plugin_ref.'_sheet'));
+					$doc->settitleWorksheet(get_option($this->ns_plugin_ref.'_tab'));
+					$my_data["date"]=date('n/j/Y');
+					foreach ( $posted_data as $key => $value ) {
+						// exclude the default wpcf7 fields in object
+						if ( strpos($key, '_wpcf7') !== false || strpos($key, '_wpnonce') !== false ) {
+							// do nothing
 						} else {
-							$my_data[$key] = $value;
-						}					
-					}
-				}				
-				$doc->add_row($my_data);
+							// handle strings and array elements
+							if (is_array($value)) {
+								$my_data[$key] = implode(', ', $value);	
+							} else {
+								$my_data[$key] = $value;
+							}					
+						}
+					}				
+					$doc->add_row($my_data);
+				}
+			} catch (Exception $e) {
+				$my_data['ERROR_MSG'] = $e->getMessage();
+				$my_data['TRACE_STK'] = $e->getTraceAsString();
 			}
         }
-		// uncomment for debugging		
+		// uncomment for debugging	
+		//mkdir( plugin_dir_path(__FILE__) . 'logs', 0755, true );	
 		//$test_file = fopen(plugin_dir_path(__FILE__) . 'logs/test.txt', 'a');
 		//$test_result = fwrite($test_file, print_r($my_data, TRUE));
+		//fclose( $test_file );
 	}
 
 	
