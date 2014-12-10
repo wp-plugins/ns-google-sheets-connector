@@ -1,0 +1,91 @@
+/** layout **/
+	
+.ns-col-left {
+	float: left;
+	max-width: 40%;
+	width: 40%;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.ns-col-right {
+	width: 25%;
+	background-color: #ededed;
+	border-radius: 12px;
+	float: left;
+	padding: 25px;	
+}
+
+.ns-col-right img {
+	max-width: 100%;
+}
+
+.ns-col-right-right {
+	width: 20%;
+	background-color: #ededed;
+	border-radius: 12px;
+	float: left;
+	padding: 25px;	
+}
+
+.ns-col-right-right img {
+	max-width: 100%;
+}
+	
+/** form fields **/
+
+.form-table th {
+	line-height: 24px;
+}
+
+/** ns sidebar **/
+	
+.ns-side-widget {
+	border: solid 1px #ddd;
+	box-shadow: 1px 1px 3px rgba(0,0,0,.1);
+	border-radius: .7em;
+	margin: .3em 0 .7em;
+	overflow: hidden;
+	padding: .7em 1.4em;
+}
+
+.ns-featured-widget, .ns-random-widget {
+	padding: 0;
+}
+
+.ns-side-widget .button, .ns-side-widget .button-secondary {
+	width: 100%;
+	text-align: center;
+	color: white !important;
+	background-color: #5ab9e9;
+	padding: .4em .7em !important;
+	font-weight: bold;
+	text-transform: uppercase;
+	border-radius: .4em;
+	text-decoration: none;
+	height: auto;
+	box-shadow: 0;
+	border: 0 !important;
+}
+
+.ns-side-widget .button:hover, .ns-side-widget .button-secondary:hover {
+	background-color: #7ad9ff;
+}
+
+.ns-side-widget .ns-featured-widget, .ns-side-widget .ns-random-widget {
+	margin: .3em 0 .7em;
+	overflow: hidden;
+	padding: .7em 1.4em;
+}
+
+.ns-featured-widget img, .ns-random-widget img {
+	vertical-align: bottom;
+}
+
+.ns-share-widget a {
+	text-decoration: none !important;
+}
+
+.ns-share-widget {
+	text-align: center;
+}
