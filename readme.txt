@@ -62,7 +62,7 @@ Sometimes it can take a while of spinning before it goes through. But if the ent
 1. Wrong username / password for google account (not likely - I'm sure you thought of this and made sure, but just thought I'd mention)
 1. Wrong Sheet filename or tab name
 1. Wrong Column name mapping
-1. You might have to tweak your security settings in your google account here: https://security.google.com/settings/security/secureaccount?pli=1 (This plugin uses Google's API which requires the setting for allowing less secure apps to be Enabled)
+1. You might have to tweak your security settings in your google account here: https://security.google.com/settings/security/secureaccount?pli=1 (This plugin uses an older Google API which requires the setting for allowing less secure apps to be Enabled)
 
 Please double-check those things and hopefully one of them is the cause.
 
