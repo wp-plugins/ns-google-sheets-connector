@@ -3,7 +3,7 @@ Contributors: neversettle
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RM625PKSQGCCY&rm=2
 Tags: google, sheets, google sheets, connector, integration, cf7, contact form 7, data, db, form, form data
 Requires at least: 3.5
-Tested up to: 4.0.1
+Tested up to: 4.1.1
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -12,9 +12,9 @@ This is a painless way to integrate and automatically send WordPress data to Goo
 
 == Description ==
 
-This plugin currently supports connecting the Contact Form 7 plugin to Google Sheets, but let us know what other kinds of data you'd like this to capture!
+NOW Supports Connecting to Google via OATH! This plugin currently supports connecting the Contact Form 7 plugin to Google Sheets, but let us know what other kinds of data you'd like this to capture!
 
-The <a href="http://neversettle.it/connect-wordpress-google-sheets-pro">PRO Version</a> is now available, and provides connections between unlimited CF7 forms and Google Spreadsheets! 
+The <a href="http://neversettle.it/connect-wordpress-google-sheets-pro">PRO Version</a> is now available, and provides connections between unlimited CF7 forms and Google Spreadsheets! We also just added basic integration and support for automatically sending basic WooCommerce data to Google Sheets! 
 
 = How to Use this Plugin =
 
@@ -26,8 +26,9 @@ The <a href="http://neversettle.it/connect-wordpress-google-sheets-pro">PRO Vers
 1. Rename Sheet 1 (tab 1 of the spreadhseet) to something simple that makes sense (maybe the name of your form).
 1. Add a column name in Row 1 for "date" and each form field you will have in your form (default CF7 form field names are "your-name", "your-email", "your-subject", "your-message"). 
 1. Install this plugin.
-1. Edit the plugin settings and copy / paste the name of your spreadsheet and worksheet into the settings under Settings > NS Sheets.
-1. Add the ID of the form you want to use in the settings.
+1. Go to Settings > NS Sheets to configure the plugin and click the link to generate a Google Code to paste in the Google Access Code box. 
+1. Copy / paste the name of your spreadsheet and worksheet into the Google Sheet Name setting.
+1. Add the spreadsheet tab name and ID of the form you want to use in the settings.
 1. Save your settings.
 1. Test your form submit and verify that the data shows up in your Google Sheet.
 1. Have a beer and celebrate! 
@@ -56,7 +57,6 @@ Enjoy!
 We'll try to answer any questions that come up in the support forum here on WP.org, but can't promise support. 
 
 = Why isn't the data sending? CF7 Submit is just Spinning. = 
-
 Sometimes it can take a while of spinning before it goes through. But if the entries never show up in your Sheet then one of these things might be the reason:
 
 1. Wrong username / password for google account (not likely - I'm sure you thought of this and made sure, but just thought I'd mention)
@@ -67,6 +67,9 @@ Sometimes it can take a while of spinning before it goes through. But if the ent
 Please double-check those things and hopefully one of them is the cause.
 
 == Changelog ==
+
+= 1.1.0 =
+* Completely rewrote Google authentication mechanism to use OATH and get get off deprecated Google APIs
 
 = 1.0.3 =
 * Added Pro Version Notification
@@ -81,3 +84,6 @@ Please double-check those things and hopefully one of them is the cause.
 * First public release
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+* Completely rewrote Google authentication mechanism to use OATH and get get off deprecated Google APIs

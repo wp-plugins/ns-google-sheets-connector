@@ -5,7 +5,7 @@
 	Description: This is a painless way to integrate and automatically send WordPress data to Google Sheets.
 	Text Domain: ns-google-sheets
 	Author: Never Settle
-	Version: 1.0.3
+	Version: 1.1.0
 	Author URI: http://neversettle.it
 	License: GPLv2 or later
 */
@@ -69,7 +69,7 @@ class ns_google_sheets_connector {
 		add_action( 'admin_menu', array($this,'register_settings_page'), 20 );
 		add_action( 'admin_enqueue_scripts', array($this, 'admin_assets') );
 		add_action( 'wpcf7_mail_sent', array($this, 'wpcf7_send_to_sheets'), 1);
-		
+
 		// TODO: uncomment this if you want to add custom JS 
 		//add_action( 'admin_print_footer_scripts', array($this, 'add_javascript'), 100 );
 		
@@ -80,6 +80,7 @@ class ns_google_sheets_connector {
 	function deactivate_plugin_actions(){
 		// TODO: add any deactivation actions here
 	}
+	
 	
 	/*********************************
 	 * NOTICES & LOCALIZATION
@@ -120,31 +121,20 @@ class ns_google_sheets_connector {
 			false, 									// Callback used to render the description of the section
 			$this->ns_plugin_ref 					// Page on which to add this section of options
 		);
-		// google login user
-		add_settings_field( 
-			$this->ns_plugin_ref.'_user', 		// ID used to identify the field
-			'Google User Login Email', 			// The label to the left of the option interface element
-			array($this,'show_settings_field'), // The name of the function responsible for rendering the option interface
-			$this->ns_plugin_ref, 				// The page on which this option will be displayed
-			$this->ns_plugin_ref.'_set_section',// The name of the section to which this field belongs
-			array( 								// args to pass to the callback function rendering the option interface
-				'field_name' => $this->ns_plugin_ref.'_user'
-			)
-		);
-		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_user');
+		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_code');
 		// google login password
 		add_settings_field( 
-			$this->ns_plugin_ref.'_pass', 		// ID used to identify the field
-			'Google User Login Password', 		// The label to the left of the option interface element
+			$this->ns_plugin_ref.'_code', 		// ID used to identify the field
+			'Google Access Code', 		// The label to the left of the option interface element
 			array($this,'show_settings_field'), // The name of the function responsible for rendering the option interface
 			$this->ns_plugin_ref, 				// The page on which this option will be displayed
 			$this->ns_plugin_ref.'_set_section',// The name of the section to which this field belongs
 			array( 								// args to pass to the callback function rendering the option interface
-				'field_name' => $this->ns_plugin_ref.'_pass',
-				'warning' => 'WARNING: In order for this to work, the google account password must be saved in your wordpress DB in plain text. This is a potential security concern. Use at your own risk!'
+				'field_name' => $this->ns_plugin_ref.'_code',
+				'warning' => 'Click <a href="https://accounts.google.com/o/oauth2/auth?access_type=offline&approval_prompt=force&client_id=1058344555307-fcus00minenokgq9vm48toli90q22783.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&scope=https%3A%2F%2Fspreadsheets.google.com%2Ffeeds%2F" target="_blank">here</a> to retrieve your code from Google Drive to allow us to access your spreadsheets.'
 			)
 		);
-		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_pass');
+		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_code');
 		
 		// google sheets name
 		add_settings_field( 
@@ -266,7 +256,7 @@ class ns_google_sheets_connector {
 				if ( $posted_data['_wpcf7'] == get_option($this->ns_plugin_ref.'_form') ) {
 					include_once(plugin_dir_path(__FILE__) . "lib/google-sheets.php");
 					$doc = new googlesheet();
-					$doc->authenticate(get_option($this->ns_plugin_ref.'_user'), get_option($this->ns_plugin_ref.'_pass'));
+					$doc->authenticate(get_option($this->ns_plugin_ref.'_code'));
 					$doc->settitleSpreadsheet(get_option($this->ns_plugin_ref.'_sheet'));
 					$doc->settitleWorksheet(get_option($this->ns_plugin_ref.'_tab'));
 					$my_data["date"]=date('n/j/Y');
@@ -290,11 +280,13 @@ class ns_google_sheets_connector {
 				$my_data['TRACE_STK'] = $e->getTraceAsString();
 			}
         }
-		// uncomment for debugging	
-		//mkdir( plugin_dir_path(__FILE__) . 'logs', 0755, true );	
-		//$test_file = fopen(plugin_dir_path(__FILE__) . 'logs/test.txt', 'a');
-		//$test_result = fwrite($test_file, print_r($my_data, TRUE));
-		//fclose( $test_file );
+		// uncomment for debugging
+		/**
+		mkdir( plugin_dir_path(__FILE__) . 'logs', 0755, true );	
+		$test_file = fopen(plugin_dir_path(__FILE__) . 'logs/test.txt', 'a');
+		$test_result = fwrite($test_file, print_r($my_data, TRUE));
+		fclose( $test_file );
+		**/		
 	}
 
 	

@@ -1,0 +1,9 @@
+Array
+(
+    [date] => 11/9/2014
+    [your-name] => 
+    [your-email] => 
+    [your-subject] => 
+    [your-checks] => one, two, three, four
+    [your-message] => 
+)
