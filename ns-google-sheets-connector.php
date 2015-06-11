@@ -5,7 +5,7 @@
 	Description: This is a painless way to integrate and automatically send WordPress data to Google Sheets.
 	Text Domain: ns-google-sheets
 	Author: Never Settle
-	Version: 1.1.0
+	Version: 1.2.0
 	Author URI: http://neversettle.it
 	License: GPLv2 or later
 */
@@ -36,11 +36,14 @@
  * https://code.google.com/p/form-connector-php-submit-to-google-spreadsheets/ 
  */
 
+
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // exit if accessed directly!
 }
 
 require_once(plugin_dir_path(__FILE__).'ns-sidebar/ns-sidebar.php');
+require_once plugin_dir_path(__FILE__).'lib/php-google-oauth/Google_Client.php';
 
 // TODO: rename this class
 class ns_google_sheets_connector {
@@ -52,6 +55,7 @@ class ns_google_sheets_connector {
 	var $ns_plugin_menu; 	// friendly menu title for re-use throughout
 	var $ns_plugin_slug; 	// slug name of this plugin for re-use throughout
 	var $ns_plugin_ref; 	// reference name of the plugin for re-use throughout
+	var $ns_token_data;
 	
 	function __construct(){		
 		$this->path = plugin_dir_path( __FILE__ );
@@ -65,11 +69,10 @@ class ns_google_sheets_connector {
 		add_action( 'plugins_loaded', array($this, 'setup_plugin') );
 		add_action( 'admin_notices', array($this,'admin_notices'), 11 );
 		add_action( 'network_admin_notices', array($this, 'admin_notices'), 11 );		
-		add_action( 'admin_init', array($this,'register_settings_fields') );		
+		add_action( 'admin_init', array($this,'register_settings_fields') );
 		add_action( 'admin_menu', array($this,'register_settings_page'), 20 );
 		add_action( 'admin_enqueue_scripts', array($this, 'admin_assets') );
 		add_action( 'wpcf7_mail_sent', array($this, 'wpcf7_send_to_sheets'), 1);
-
 		// TODO: uncomment this if you want to add custom JS 
 		//add_action( 'admin_print_footer_scripts', array($this, 'add_javascript'), 100 );
 		
@@ -87,7 +90,9 @@ class ns_google_sheets_connector {
 	 */
 	 
 	 function setup_plugin(){
-	 	load_plugin_textdomain( $this->ns_plugin_slug, false, $this->path."lang/" ); 
+	 	load_plugin_textdomain( $this->ns_plugin_slug, false, $this->path."lang/" );
+		// $this->ns_token_data = ( is_file(plugin_dir_path(__FILE__) . "lib/.tokendata") ? json_decode(file_get_contents(plugin_dir_path(__FILE__) . "lib/.tokendata"), true) : false );
+		$this->ns_token_data = get_option($this->ns_plugin_ref.'_token', false);
 	 }
 	
 	function admin_notices(){
@@ -113,7 +118,7 @@ class ns_google_sheets_connector {
 	 * SETTINGS PAGE
 	 */
 	
-	function register_settings_fields() {
+	function register_settings_fields() {		
 		// TODO: might want to update / add additional sections and their names, if so update 'default' in add_settings_field too
 		add_settings_section( 
 			$this->ns_plugin_ref.'_set_section', 	// ID used to identify this section and with which to register options
@@ -121,7 +126,9 @@ class ns_google_sheets_connector {
 			false, 									// Callback used to render the description of the section
 			$this->ns_plugin_ref 					// Page on which to add this section of options
 		);
-		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_code');
+		// register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_code'); // is this needed?
+		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_token');
+		
 		// google login password
 		add_settings_field( 
 			$this->ns_plugin_ref.'_code', 		// ID used to identify the field
@@ -131,7 +138,8 @@ class ns_google_sheets_connector {
 			$this->ns_plugin_ref.'_set_section',// The name of the section to which this field belongs
 			array( 								// args to pass to the callback function rendering the option interface
 				'field_name' => $this->ns_plugin_ref.'_code',
-				'warning' => 'Click <a href="https://accounts.google.com/o/oauth2/auth?access_type=offline&approval_prompt=force&client_id=1058344555307-fcus00minenokgq9vm48toli90q22783.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&scope=https%3A%2F%2Fspreadsheets.google.com%2Ffeeds%2F" target="_blank">here</a> to retrieve your code from Google Drive to allow us to access your spreadsheets.'
+				'is_set' => ( ( get_option($this->ns_plugin_ref.'_code') != '' || (isset( $this->ns_token_data['access_token'] ) && $this->ns_token_data['access_token'] != '') ) ? 1 : 0 ),
+				'warning' => 'Click <a href="https://accounts.google.com/o/oauth2/auth?access_type=offline&approval_prompt=force&client_id=1058344555307-fcus00minenokgq9vm48toli90q22783.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&scope=https%3A%2F%2Fspreadsheets.google.com%2Ffeeds%2F" target="_blank">here</a> to retrieve your code from Google Drive to allow us to access your spreadsheets.' 
 			)
 		);
 		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_code');
@@ -172,18 +180,45 @@ class ns_google_sheets_connector {
 			)
 		);
 		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_form');
-	}	
+		
+		// log errors (for debugging)
+		add_settings_field(
+			$this->ns_plugin_ref.'_log', 		// ID used to identify the field
+			'Debug Log', 		// The label to the left of the option interface element
+			array($this,'show_settings_field'), // The name of the function responsible for rendering the option interface
+			$this->ns_plugin_ref, 				// The page on which this option will be displayed
+			$this->ns_plugin_ref.'_set_section',// The name of the section to which this field belongs
+			array( 								// args to pass to the callback function rendering the option interface
+				'field_name' => $this->ns_plugin_ref.'_log',
+				'warning' => 'Please provide the debug log linked above when contacting our support team.', 
+				'type' => 'link'
+			)
+		);
+		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_log');
+		
+	}
 
 	function show_settings_field($args){
 		$saved_value = get_option( $args['field_name'] );
-		// initialize in case there are no existing options
-		if ( empty($saved_value) ) {
-			echo '<input type="text" name="' . $args['field_name'] . '" value="Setting Value" /><br/>';
-		} else {
-			echo '<input type="text" name="' . $args['field_name'] . '" value="'.$saved_value.'" /><br/>';
+		$type_value = ( isset( $args['type'] ) ? $args['type'] : 'text' );
+		$val_set = ( isset( $args['is_set'] ) ? $args['is_set'] : 0 );
+		
+		switch($type_value){
+			case 'link':
+				echo "<a href='".plugins_url('/logs/log.txt', __FILE__)."' target='_blank' alt='log.txt'>Download</a>";
+			break;
+			default:
+				// initialize in case there are no existing options
+				if ( empty($saved_value) && $val_set ) {
+					echo '<input type="' . $type_value . '" name="' . $args['field_name'] . '" value="" placeholder="Currently Activated" /><br/>';
+				}else if ( empty($saved_value) && !$val_set ) {
+					echo '<input type="' . $type_value . '" name="' . $args['field_name'] . '" value="" /><br/>';
+				} else {
+					echo "<input type='$type_value' name='{$args['field_name']}' value='$saved_value' /><br/>";
+				}
 		}
 		if ( !empty($args['warning']) ) {
-			echo '<p style="color:red">'.$args['warning'].'</p>';
+			echo "<p style='color:red'>{$args['warning']}</p>";
 		} 
 	}
 
@@ -199,6 +234,11 @@ class ns_google_sheets_connector {
 	}
 	
 	function show_settings_page(){
+		if(isset($_GET['settings-updated']) && get_option($this->ns_plugin_ref.'_code') != ''){
+			include_once(plugin_dir_path(__FILE__) . "lib/google-sheets.php");
+			googlesheet::preauth( get_option($this->ns_plugin_ref.'_code') );
+			update_option($this->ns_plugin_ref.'_code', null);
+		}
 		?>
 		<div class="wrap">
 			
@@ -256,7 +296,7 @@ class ns_google_sheets_connector {
 				if ( $posted_data['_wpcf7'] == get_option($this->ns_plugin_ref.'_form') ) {
 					include_once(plugin_dir_path(__FILE__) . "lib/google-sheets.php");
 					$doc = new googlesheet();
-					$doc->authenticate(get_option($this->ns_plugin_ref.'_code'));
+					$doc->auth();
 					$doc->settitleSpreadsheet(get_option($this->ns_plugin_ref.'_sheet'));
 					$doc->settitleWorksheet(get_option($this->ns_plugin_ref.'_tab'));
 					$my_data["date"]=date('n/j/Y');
@@ -280,15 +320,25 @@ class ns_google_sheets_connector {
 				$my_data['TRACE_STK'] = $e->getTraceAsString();
 			}
         }
-		// uncomment for debugging
-		/**
-		mkdir( plugin_dir_path(__FILE__) . 'logs', 0755, true );	
-		$test_file = fopen(plugin_dir_path(__FILE__) . 'logs/test.txt', 'a');
-		$test_result = fwrite($test_file, print_r($my_data, TRUE));
-		fclose( $test_file );
-		**/		
 	}
+	
+	public static function ns_debug_log($error){
+		try{	
+			if( !is_dir( plugin_dir_path(__FILE__).'/logs' ) ){
+				mkdir( plugin_dir_path(__FILE__) . 'logs', 0755, true );
+			}
+		} catch (Exception $e) {
 
+		}
+		try{
+			$log = fopen(plugin_dir_path(__FILE__) . "logs/log.txt", 'a');
+			$result = fwrite($log, print_r(date('H:i:s')." \t PHP ".phpversion()." \t $error \r\n", TRUE));
+			fclose( $log );
+		} catch (Exception $e) {
+			
+		}
+
+	}
 	
 	/*************************************
 	 * UITILITY

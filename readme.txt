@@ -68,6 +68,9 @@ Please double-check those things and hopefully one of them is the cause.
 
 == Changelog ==
 
+= 1.2.0 =
+* Completely rewrote plugin and token functions for better compatibility
+
 = 1.1.0 =
 * Completely rewrote Google authentication mechanism to use OATH and get get off deprecated Google APIs
 
@@ -85,5 +88,5 @@ Please double-check those things and hopefully one of them is the cause.
 
 == Upgrade Notice ==
 
-= 1.1.0 =
-* Completely rewrote Google authentication mechanism to use OATH and get get off deprecated Google APIs
+= 1.2.0 =
+* Completely rewrote plugin and token functions for better compatibility
