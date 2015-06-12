@@ -68,6 +68,9 @@ Please double-check those things and hopefully one of them is the cause.
 
 == Changelog ==
 
+= 1.2.1 =
+* Added token to database for better handling
+
 = 1.2.0 =
 * Completely rewrote plugin and token functions for better compatibility
 
@@ -88,5 +91,5 @@ Please double-check those things and hopefully one of them is the cause.
 
 == Upgrade Notice ==
 
-= 1.2.0 =
-* Completely rewrote plugin and token functions for better compatibility
+= 1.2.1 =
+* Added token to database for better handling

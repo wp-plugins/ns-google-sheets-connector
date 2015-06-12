@@ -5,7 +5,7 @@
 	Description: This is a painless way to integrate and automatically send WordPress data to Google Sheets.
 	Text Domain: ns-google-sheets
 	Author: Never Settle
-	Version: 1.2.0
+	Version: 1.2.1
 	Author URI: http://neversettle.it
 	License: GPLv2 or later
 */
@@ -35,7 +35,6 @@
  * The original can be found here:
  * https://code.google.com/p/form-connector-php-submit-to-google-spreadsheets/ 
  */
-
 
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -91,7 +90,6 @@ class ns_google_sheets_connector {
 	 
 	 function setup_plugin(){
 	 	load_plugin_textdomain( $this->ns_plugin_slug, false, $this->path."lang/" );
-		// $this->ns_token_data = ( is_file(plugin_dir_path(__FILE__) . "lib/.tokendata") ? json_decode(file_get_contents(plugin_dir_path(__FILE__) . "lib/.tokendata"), true) : false );
 		$this->ns_token_data = get_option($this->ns_plugin_ref.'_token', false);
 	 }
 	
@@ -126,7 +124,6 @@ class ns_google_sheets_connector {
 			false, 									// Callback used to render the description of the section
 			$this->ns_plugin_ref 					// Page on which to add this section of options
 		);
-		// register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_code'); // is this needed?
 		register_setting( $this->ns_plugin_ref, $this->ns_plugin_ref.'_token');
 		
 		// google login password
@@ -198,7 +195,7 @@ class ns_google_sheets_connector {
 		
 	}
 
-	function show_settings_field($args){
+	function show_settings_field($args){		
 		$saved_value = get_option( $args['field_name'] );
 		$type_value = ( isset( $args['type'] ) ? $args['type'] : 'text' );
 		$val_set = ( isset( $args['is_set'] ) ? $args['is_set'] : 0 );
@@ -209,7 +206,7 @@ class ns_google_sheets_connector {
 			break;
 			default:
 				// initialize in case there are no existing options
-				if ( empty($saved_value) && $val_set ) {
+				if ( empty($saved_value) && $args['field_name'] == "{$this->ns_plugin_ref}_code" && get_option($this->ns_plugin_ref.'_set')) {
 					echo '<input type="' . $type_value . '" name="' . $args['field_name'] . '" value="" placeholder="Currently Activated" /><br/>';
 				}else if ( empty($saved_value) && !$val_set ) {
 					echo '<input type="' . $type_value . '" name="' . $args['field_name'] . '" value="" /><br/>';
@@ -238,6 +235,7 @@ class ns_google_sheets_connector {
 			include_once(plugin_dir_path(__FILE__) . "lib/google-sheets.php");
 			googlesheet::preauth( get_option($this->ns_plugin_ref.'_code') );
 			update_option($this->ns_plugin_ref.'_code', null);
+			update_option($this->ns_plugin_ref.'_set', 1);
 		}
 		?>
 		<div class="wrap">
@@ -318,6 +316,7 @@ class ns_google_sheets_connector {
 			} catch (Exception $e) {
 				$my_data['ERROR_MSG'] = $e->getMessage();
 				$my_data['TRACE_STK'] = $e->getTraceAsString();
+				ns_google_sheets_connector::ns_debug_log($my_data);
 			}
         }
 	}
